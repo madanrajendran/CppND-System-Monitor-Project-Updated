@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <string>
 #include <vector>
+#include <iostream>
 
 #include "linux_parser.h"
 
@@ -88,18 +89,23 @@ long LinuxParser::IdleJiffies() { return 0; }
 // TODO: Read and return CPU utilization
 vector<string> LinuxParser::CpuUtilization() 
 { 
-  std::ifstream cpuFileStream(LinuxParser::kProcDirectory + LinuxParser::kStatusFilename);
-  vector<string> cpuValues(8, "");
+  std::ifstream cpuFileStream;
+  vector<string> cpuValues(9, "");
   string lineString = "";
   string cpuString;
 
+  cpuFileStream.open(LinuxParser::kProcDirectory + LinuxParser::kStatFilename);
+
   if(cpuFileStream.is_open())
   {
+    //std::cout << "open\n";
     getline(cpuFileStream, lineString);
     std::stringstream lineStringStream(lineString);
 
     lineStringStream >> cpuString >> cpuValues[0] >> cpuValues[1] >> cpuValues[2] >> cpuValues[3] >> 
-    cpuValues[4] >> cpuValues[5] >> cpuValues[6] >> cpuValues[7];
+    cpuValues[4] >> cpuValues[5] >> cpuValues[6] >> cpuValues[7] >> cpuValues[8];
+
+    //std::cout << lineString << std::endl;
   }
   
   return cpuValues; 
