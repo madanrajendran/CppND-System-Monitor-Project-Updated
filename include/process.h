@@ -20,6 +20,11 @@ class Process {
   // TODO: Declare any necessary private members
  private:
  int processId_;
+ std::string user_;
+ std::string command_;
+ void FindUserForProcess();
+ void FindCommandForProcess();
+
 };
 
 #endif

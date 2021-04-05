@@ -202,7 +202,18 @@ int LinuxParser::RunningProcesses()
 
 // TODO: Read and return the command associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::Command(int pid[[maybe_unused]]) { return string(); }
+string LinuxParser::Command(int pid) 
+{ 
+  string value{""};
+  std::ifstream filestream(kProcDirectory + "/" + std::to_string(pid) + kCmdlineFilename);
+  if (filestream.is_open()) 
+  {
+    std::getline(filestream, value);
+    return value;
+  }
+  
+  return value;
+}
 
 // TODO: Read and return the memory used by a process
 // REMOVE: [[maybe_unused]] once you define the function
@@ -210,11 +221,58 @@ string LinuxParser::Ram(int pid[[maybe_unused]]) { return string(); }
 
 // TODO: Read and return the user ID associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::Uid(int pid[[maybe_unused]]) { return string(); }
+string LinuxParser::Uid(int pid) 
+{ 
+  std::ifstream statusFileStream(kProcDirectory + '/' + std::to_string(pid) + kStatusFilename);
+  string line{}, key{}, value{'0'};
+  bool keyFound = false;
+
+
+  if(statusFileStream.is_open())
+  {
+    while(std::getline(statusFileStream, line) && (keyFound == false))
+    {
+      std::replace(line.begin(), line.end(), ':', ' ');
+      std::istringstream lineStringStream(line);
+      lineStringStream >> key >> value;
+
+      if(key == "Uid")
+      {
+        keyFound = true;
+      }
+    }
+  }
+
+  return value;
+}
 
 // TODO: Read and return the user associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::User(int pid[[maybe_unused]]) { return string(); }
+string LinuxParser::User(int pid) 
+{ 
+  string line{}, key{}, value{}, other{};
+  string userId = Uid(pid);
+
+  std::ifstream pwdFileStream(kPasswordPath);
+
+  if(pwdFileStream.is_open())
+  {
+    while(std::getline(pwdFileStream, line))
+    {
+      std::replace(line.begin(), line.end(), ':', ' ');
+      std::istringstream linestream(line);
+      while (linestream >> value >> other >> key) //go through the words in the line
+      {
+        if (key == userId) 
+        {
+          return value;
+        }
+      }
+    }
+  }
+
+  return value; 
+}
 
 // TODO: Read and return the uptime of a process
 // REMOVE: [[maybe_unused]] once you define the function
