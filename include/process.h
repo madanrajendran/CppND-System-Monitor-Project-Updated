@@ -22,8 +22,19 @@ class Process {
  int processId_;
  std::string user_;
  std::string command_;
+ float cpuUsage_;
  void FindUserForProcess();
  void FindCommandForProcess();
+ void CalcCpuUsageForProcess();
+
+   // CPU values of a process
+  enum ProcessCPUStates {
+    kUtime_ = 0,
+    kStime_,
+    kCutime_,
+    kCstime_,
+    kStarttime_
+  };
 
 };
 

@@ -16,6 +16,7 @@ Process::Process(int pid):processId_(pid)
 {
     FindUserForProcess();
     FindCommandForProcess();
+    CalcCpuUsageForProcess();
 }
 
 
@@ -26,7 +27,10 @@ int Process::Pid()
 }
 
 // TODO: Return this process's CPU utilization
-float Process::CpuUtilization() { return 0; }
+float Process::CpuUtilization() 
+{ 
+    return cpuUsage_; 
+}
 
 // TODO: Return the command that generated this process
 string Process::Command() 
@@ -57,3 +61,25 @@ void Process::FindCommandForProcess()
     command_ = LinuxParser::Command(Pid());
 }
 
+void Process::CalcCpuUsageForProcess()
+{
+    // read values from filesystem
+    long uptime = LinuxParser::UpTime();
+    
+    vector<float> val = LinuxParser::CpuUtilization(Pid());
+
+    // only if the values could be read sucessfully
+    if (val.size() == 5) 
+    {
+        // add utime, stime, cutime, cstime (they are in seconds)
+        float totaltime = val[kUtime_] + val[kStime_] + val[kCutime_] + val[kCstime_];
+        float seconds = uptime - val[kStarttime_];
+        
+        // calculate the processes CPU usage
+        cpuUsage_ = totaltime / seconds;
+    } 
+    else
+    {
+        cpuUsage_ = 0;
+    }
+}

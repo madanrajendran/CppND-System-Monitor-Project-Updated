@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "linux_parser.h"
+#include "process.h"
 
 using std::stof;
 using std::string;
@@ -57,7 +58,10 @@ vector<int> LinuxParser::Pids() {
     if (file->d_type == DT_DIR) {
       // Is every character of the name a digit?
       string filename(file->d_name);
-      if (std::all_of(filename.begin(), filename.end(), isdigit)) {
+
+      if (std::all_of(filename.begin(), filename.end(), isdigit)) 
+      {
+        //std::cout<<filename<<std::endl;
         int pid = stoi(filename);
         pids.push_back(pid);
       }
@@ -211,7 +215,7 @@ string LinuxParser::Command(int pid)
     std::getline(filestream, value);
     return value;
   }
-  
+
   return value;
 }
 
@@ -277,3 +281,39 @@ string LinuxParser::User(int pid)
 // TODO: Read and return the uptime of a process
 // REMOVE: [[maybe_unused]] once you define the function
 long LinuxParser::UpTime(int pid[[maybe_unused]]) { return 0; }
+
+
+// Read and return the CPU usage of a process
+// return the values in seconds
+std::vector<float> LinuxParser::CpuUtilization(int pid) 
+{
+  vector<float> cpuValues{};
+  string line;
+  float time = 0;
+  string value;
+  std::ifstream filestream(kProcDirectory + "/" + std::to_string(pid) + kStatFilename);
+  if (filestream.is_open()) 
+  {
+    while (std::getline(filestream, line)) 
+    {
+      std::istringstream linestream(line);
+      for (int i = 1; i <= kStarttime_; i++) 
+      {
+        linestream >> value;
+        // read CPU time spent in user mode - utime #14
+        // read CPU time spent in kernel mode - stime #15
+        // read Waited for children's CPU time spent in user mode - cutime #16
+        // read Waited for children's CPU time spent in kernel mode- cstime #17
+        // read the time when process started - starttime #22
+        if (i == kUtime_ || i == kStime_ || i == kCutime_ || i == kCstime_ || i == kStarttime_) 
+        {
+          // read in clock ticks and convert to seconds
+          // devide by clock ticks per second
+          time = std::stof(value) / sysconf(_SC_CLK_TCK);
+          cpuValues.push_back(time);
+        }
+      }
+    }
+  }
+  return cpuValues;
+}
