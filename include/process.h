@@ -23,9 +23,14 @@ class Process {
  std::string user_;
  std::string command_;
  float cpuUsage_;
+ std::string ram_;
+ long uptime_;
+
  void FindUserForProcess();
  void FindCommandForProcess();
  void CalcCpuUsageForProcess();
+ void CalcRamUsageForProcess();
+ void CalcUptimeForProcess();
 
    // CPU values of a process
   enum ProcessCPUStates {
